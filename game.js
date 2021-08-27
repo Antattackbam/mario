@@ -1,9 +1,10 @@
+//initialize kaboom
 kaboom({
     global: true,
     fullscreen: true,
     scale: 1.5,
     debug: true,
-    clearColor: [0,0,0,1]
+    clearColor: [0, 0, 0, 1]
 })
 
 //variables
@@ -15,7 +16,7 @@ let CURRENT_JUMP_FORCE = JUMP_FORCE
 let isJumping = true
 const FALL_DEATH = 400
 
-
+//loading images into asset handler
 loadRoot('https://i.imgur.com/')
 loadSprite('coin', 'wbKxhcd.png')
 loadSprite('evil-shroom', 'KPO3fR9.png')
@@ -30,9 +31,11 @@ loadSprite('pipe-top-right', 'hj2GK4n.png')
 loadSprite('pipe-bottom-left', 'c1cYSbt.png')
 loadSprite('pipe-bottom-right', 'nqQ79eI.png')
 
-scene('game', ({level, score}) =>{
-    layers(['bg','obj','ui'], 'obj')
+//scene creation
+scene('game', ({ level, score }) => {
+    layers(['bg', 'obj', 'ui'], 'obj')
 
+    //map layout
     const map = [
         '                                                                ',
         '                                                                ',
@@ -55,13 +58,14 @@ scene('game', ({level, score}) =>{
         '===============================================      ==========='
     ]
 
+    //level configuration
     const levelCfg = {
         width: 20,
         height: 20,
         '=': [sprite('block'), solid(), area()],
         '$': [sprite('coin'), solid(), area(), 'coin'],
         '#': [sprite('surprise'), solid(), area(), 'coin-surprise'],
-        '*': [sprite('surprise'), solid(), area() , 'mushroom-surprise'],
+        '*': [sprite('surprise'), solid(), area(), 'mushroom-surprise'],
         '}': [sprite('unboxed'), solid(), area()],
         '(': [sprite('pipe-bottom-left'), solid(), area()],
         ')': [sprite('pipe-bottom-right'), solid(), area()],
@@ -75,37 +79,38 @@ scene('game', ({level, score}) =>{
 
     const scoreLabel = add([
         text('score:' + score),
-        pos(30,2),
+        pos(30, 2),
         layer('ui'),
         {
             value: score,
         }
     ])
 
-    add([text('level: ' + parseInt(level + 1)), pos(30,60)])
+    add([text('level: ' + parseInt(level + 1)), pos(30, 60)])
 
+    //controls when mario is big or small and sets the mechanics
     function big() {
         let timer = 0
         let isBig = false
         return {
-            update(){
-                if (isBig){
+            update() {
+                if (isBig) {
                     timer -= dt()
-                    if (timer <= 0){
+                    if (timer <= 0) {
                         this.smallify()
                     }
                 }
             },
-            isBig(){
+            isBig() {
                 return isBig
             },
-            smallify(){
+            smallify() {
                 this.scale = vec2(1)
                 CURRENT_JUMP_FORCE = JUMP_FORCE
                 timer = 0
                 isBig = false
             },
-            biggify(time){
+            biggify(time) {
                 this.scale = vec2(2)
                 CURRENT_JUMP_FORCE = BIG_JUMP_FORCE
                 timer = time
@@ -114,50 +119,59 @@ scene('game', ({level, score}) =>{
         }
     }
 
+    //player
     const player = add([
         sprite('mario'), area(), solid(),
-        pos(30,5),
+        pos(30, 5),
         body(),
         big(),
         origin('bot')
     ])
 
+    //actions
     action('mushroom', (m) => {
         m.move(13, 0)
-    })
-
-    player.on("headbutt", (obj) =>{
-        if (obj.is('coin-surprise')){
-            gameLevel.spawn('$', obj.gridPos.sub(0,1))
-            destroy(obj)
-            gameLevel.spawn('}', obj.gridPos.sub(0,0))
-        }
-        if (obj.is('mushroom-surprise')){
-            gameLevel.spawn('^', obj.gridPos.sub(0,1))
-            destroy(obj)
-            gameLevel.spawn('}', obj.gridPos.sub(0,0))
-        }
-    })
-
-
-    player.action( () => {
-        player.pushOutAll();
     })
 
     action('dangerous', (d) => {
         d.move(-ENEMY_SPEED, 0)
     })
 
+    player.action(() => {
+        player.pushOutAll();
+    })
+
+    player.action(() => {
+        camPos(player.pos)
+        if (player.pos.y >= FALL_DEATH) {
+            go('lose', { score: scoreLabel.value })
+        }
+    })
+
+    player.on("headbutt", (obj) => {
+        if (obj.is('coin-surprise')) {
+            gameLevel.spawn('$', obj.gridPos.sub(0, 1))
+            destroy(obj)
+            gameLevel.spawn('}', obj.gridPos.sub(0, 0))
+        }
+        if (obj.is('mushroom-surprise')) {
+            gameLevel.spawn('^', obj.gridPos.sub(0, 1))
+            destroy(obj)
+            gameLevel.spawn('}', obj.gridPos.sub(0, 0))
+        }
+    })//
+
+    //collisions
     player.collides('mushroom', (m) => {
         destroy(m)
         player.biggify(6)
     })
 
     player.collides('dangerous', () => {
-        if(isJumping) {
+        if (isJumping) {
             destroy(d)
         } else {
-        go('lose', {score: scoreLabel.value})
+            go('lose', { score: scoreLabel.value })
         }
     })
 
@@ -176,13 +190,9 @@ scene('game', ({level, score}) =>{
         })
     })
 
-    player.action(() => {
-        camPos(player.pos)
-        if (player.pos.y >= FALL_DEATH) {
-            go('lose', {score: scoreLabel.value})
-        }
-    })
+    //
 
+    //movements
     keyDown('left', () => {
         player.move(-MOVE_SPEED, 0)
     })
@@ -194,24 +204,27 @@ scene('game', ({level, score}) =>{
         player.move(MOVE_SPEED, 0)
     })
 
-    player.action( () => {
-        if(player.grounded()) {
+    //sets jumping to false so can be killed by enemy
+    player.action(() => {
+        if (player.grounded()) {
             isJumping = false
         }
     })
 
+    //jump
     keyPress('space', () => {
-        if(player.grounded()) {
+        if (player.grounded()) {
             isJumping = true
             player.jump(CURRENT_JUMP_FORCE)
         }
     })
-    
- 
+
+
 })
 
-scene('lose', ({score}) => {
-    add([text(score, 32), origin('center'), pos(width()/2, height()/2)])
+//losing/death scene
+scene('lose', ({ score }) => {
+    add([text(score, 32), origin('center'), pos(width() / 2, height() / 2)])
 })
 
-go('game', {level: 0, score: 0})
+go('game', { level: 0, score: 0 })
