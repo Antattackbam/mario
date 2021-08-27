@@ -1,7 +1,7 @@
 kaboom({
     global: true,
     fullscreen: true,
-    scale: 1.1,
+    scale: 1.5,
     debug: true,
     clearColor: [0,0,0,1]
 })
@@ -51,7 +51,7 @@ scene('game', ({level, score}) =>{
         '                                                                ',
         '                                                                ',
         '                                           -+                   ',
-        '                             %          %  ()                   ',
+        '              %%%%%          %%%%%%     %  ()                   ',
         '===============================================      ==========='
     ]
 
@@ -68,7 +68,7 @@ scene('game', ({level, score}) =>{
         '-': [sprite('pipe-top-left'), solid(), area()],
         '+': [sprite('pipe-top-right'), solid(), area()],
         '^': [sprite('mushroom'), 'mushroom', body(), area()],
-        '%': [sprite('evil-shroom'), solid(), area(), 'dangerous']
+        '%': [sprite('evil-shroom'), solid(), body(), area(), 'dangerous']
     }
 
     const gameLevel = addLevel(map, levelCfg)
