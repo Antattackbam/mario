@@ -4,7 +4,7 @@ kaboom({
     fullscreen: true,
     scale: 1.5,
     debug: true,
-    clearColor: [0, 0, 0, 1]
+    clearColor: [0, 0, 0, 0]
 })
 
 //variables
@@ -17,6 +17,7 @@ let isJumping = true
 const FALL_DEATH = 400
 
 //loading images into asset handler
+loadSound('clear', '.\Downloads\8d82b5_Super_Mario_Bros_World_Clear_Sound_Effect.mp3')
 loadRoot('https://i.imgur.com/')
 loadSprite('coin', 'wbKxhcd.png')
 loadSprite('evil-shroom', 'KPO3fR9.png')
@@ -62,7 +63,7 @@ scene('game', ({ level, score }) => {
     const levelCfg = {
         width: 20,
         height: 20,
-        '=': [sprite('block'), solid(), area()],
+        '=': [sprite('block'), solid(), area(), 'block'],
         '$': [sprite('coin'), solid(), area(), 'coin'],
         '#': [sprite('surprise'), solid(), area(), 'coin-surprise'],
         '*': [sprite('surprise'), solid(), area(), 'mushroom-surprise'],
@@ -130,7 +131,7 @@ scene('game', ({ level, score }) => {
 
     //actions
     action('mushroom', (m) => {
-        m.move(13, 0)
+        m.move(15, 0)
     })
 
     action('dangerous', (d) => {
@@ -159,6 +160,9 @@ scene('game', ({ level, score }) => {
             destroy(obj)
             gameLevel.spawn('}', obj.gridPos.sub(0, 0))
         }
+        if (obj.is('block') && player.isBig()){
+            destroy(obj)
+        }
     })//
 
     //collisions
@@ -167,7 +171,8 @@ scene('game', ({ level, score }) => {
         player.biggify(6)
     })
 
-    player.collides('dangerous', () => {
+
+    player.collides('dangerous', (d) => {
         if (isJumping) {
             destroy(d)
         } else {
@@ -212,7 +217,7 @@ scene('game', ({ level, score }) => {
     })
 
     //jump
-    keyPress('space', () => {
+    keyPress('up', () => {
         if (player.grounded()) {
             isJumping = true
             player.jump(CURRENT_JUMP_FORCE)
@@ -224,7 +229,11 @@ scene('game', ({ level, score }) => {
 
 //losing/death scene
 scene('lose', ({ score }) => {
-    add([text(score, 32), origin('center'), pos(width() / 2, height() / 2)])
+    play('clear')
+    add([text('score: ' + score, 32), origin('center'), pos(width() / 2, height() / 2)])
+    if (score === 0){
+        add([text('You suck.', 20), origin('bot'), pos(width() / 3, height() / 3)])
+    }
 })
 
 go('game', { level: 0, score: 0 })
