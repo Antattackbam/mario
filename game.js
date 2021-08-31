@@ -8,16 +8,15 @@ kaboom({
 })
 
 //variables
-const MOVE_SPEED = 120
+const MOVE_SPEED = 300
 const ENEMY_SPEED = 20
-const JUMP_FORCE = 460
-const BIG_JUMP_FORCE = 550
+const JUMP_FORCE = 800
+const BIG_JUMP_FORCE = 900
 let CURRENT_JUMP_FORCE = JUMP_FORCE
 let isJumping = true
 const FALL_DEATH = 400
 
 //loading images into asset handler
-loadSound('clear', '.\Downloads\8d82b5_Super_Mario_Bros_World_Clear_Sound_Effect.mp3')
 loadRoot('https://i.imgur.com/')
 loadSprite('coin', 'wbKxhcd.png')
 loadSprite('evil-shroom', 'KPO3fR9.png')
@@ -55,7 +54,7 @@ scene('game', ({ level, score }) => {
         '                                                                ',
         '                                                                ',
         '                                           -+                   ',
-        '              %%%%%          %%%%%%     %  ()                   ',
+        '              %   %          %%  %%     %  ()                   ',
         '===============================================      ==========='
     ]
 
@@ -229,10 +228,15 @@ scene('game', ({ level, score }) => {
 
 //losing/death scene
 scene('lose', ({ score }) => {
-    play('clear')
     add([text('score: ' + score, 32), origin('center'), pos(width() / 2, height() / 2)])
     if (score === 0){
         add([text('You suck.', 20), origin('bot'), pos(width() / 3, height() / 3)])
+    }
+    if ((score <= 10) && (score >= 1)) {
+        add([text('Get Better.', 20), origin('bot'), pos(width() / 3, height() / 3)])
+    }
+    if (score > 10){
+        add([text('Savage.', 20), origin('bot'), pos(width() / 3, height() / 3)])
     }
 })
 
